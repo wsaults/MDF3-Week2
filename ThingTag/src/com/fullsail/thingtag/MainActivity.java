@@ -19,6 +19,12 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
+		// TODO: add button that opens camera.
+		// TODO: store picture/video with GPS.
+		// TODO: check for network connectivity
+		// TODO: Notify yourself if you tag something within a certain distance from another tag.
+		
 	}
 
 	@Override
