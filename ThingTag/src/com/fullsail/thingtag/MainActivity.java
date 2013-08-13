@@ -24,6 +24,7 @@ public class MainActivity extends Activity {
 		// TODO: store picture/video with GPS.
 		// TODO: check for network connectivity
 		// TODO: Notify yourself if you tag something within a certain distance from another tag.
+		// TODO: view tags, show pictures, play back videos.
 		
 	}
 
