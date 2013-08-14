@@ -57,7 +57,6 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				//create new Intent
 			    Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-
 			    fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);  // create a file to save the video
 			    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);  // set the image file name
 
@@ -126,14 +125,14 @@ public class MainActivity extends Activity {
 		// using Environment.getExternalStorageState() before doing this.
 
 		File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-				Environment.DIRECTORY_PICTURES), "MyCameraApp");
+				Environment.DIRECTORY_PICTURES), "ThingTag");
 		// This location works best if you want the created images to be shared
 		// between applications and persist after your app has been uninstalled.
 
 		// Create the storage directory if it does not exist
 		if (! mediaStorageDir.exists()){
 			if (! mediaStorageDir.mkdirs()){
-				Log.d("Camera App", "failed to create directory");
+				Log.d("ThingTag", "failed to create directory");
 				return null;
 			}
 		}
