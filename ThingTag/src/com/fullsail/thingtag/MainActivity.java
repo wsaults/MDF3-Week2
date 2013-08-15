@@ -10,29 +10,41 @@
 package com.fullsail.thingtag;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.fullsail.weather.Connectivity;
-
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.MediaController;
+import android.widget.VideoView;
 
 public class MainActivity extends Activity {
 
 	private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
 	private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
+
+	private final int VIB_NOTE_ID = 2;
+	private final int SND_NOTE_ID = 4;
+	private final int TXT_NOTE_ID = 5;
 
 	private Uri fileUri;
 	Context context = this;
@@ -42,7 +54,7 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
+
 		// Test Network Connetion
 		connected = Connectivity.getConnectionStatus(context);
 
@@ -51,6 +63,10 @@ public class MainActivity extends Activity {
 		cameraButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				if (!connected)  {
+					noConnectionAlert();
+					return;
+				}
 				// create Intent to take a picture and return control to the calling application
 				Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
@@ -67,10 +83,14 @@ public class MainActivity extends Activity {
 		videoButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				if (!connected)  {
+					noConnectionAlert();
+					return;
+				}
 				//create new Intent
 				Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
 				fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);  // create a file to save the video
-				intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);  // set the image file name
+//				intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);  // set the image file name
 
 				intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1); // set the video image quality to high
 
@@ -92,9 +112,6 @@ public class MainActivity extends Activity {
 
 			}
 		});
-
-		// TODO: Notify yourself if you tag something within a certain distance from another tag.
-
 	}
 
 	@Override
@@ -103,12 +120,12 @@ public class MainActivity extends Activity {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
-	
+
 	public void noConnectionAlert() {
 		// Alert the user that there is no internet connection			
 		new AlertDialog.Builder(context)
-		.setTitle("Warning")
-		.setMessage("Cound not connect to the internet")
+		.setTitle("Internet connectivity")
+		.setMessage("Cannot store GPS data without internet.")
 		.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {}
 		})
@@ -122,6 +139,27 @@ public class MainActivity extends Activity {
 			if (resultCode == RESULT_OK) {
 				// Image captured and saved to fileUri specified in the Intent
 				//	            Toast.makeText(this, "Image saved to:\n" + data.getData(), Toast.LENGTH_LONG).show();
+				NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+				Notification notification = new Notification();
+				nm.notify(VIB_NOTE_ID, notification);
+				nm.notify(SND_NOTE_ID, notification);
+
+				//				NotificationCompat.Builder mBuilder =
+				//				        new NotificationCompat.Builder(this)
+				//				        .setContentTitle("Great job!!!")
+				//				        .setContentText("You just tagged an image!");
+				//				// Creates an explicit intent for an Activity in your app
+				////				Intent resultIntent = new Intent(this, ResultActivity.class);
+				//
+				//				TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+				//
+				////				stackBuilder.addParentStack(ResultActivity.class);
+				////				stackBuilder.addNextIntent(resultIntent);
+				//				PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+				//				mBuilder.setContentIntent(resultPendingIntent);
+				//				// mId allows you to update the notification later on.
+				//				nm.notify(TXT_NOTE_ID, mBuilder.build());
+
 			} else if (resultCode == RESULT_CANCELED) {
 				// User cancelled the image capture
 			} else {
@@ -131,6 +169,12 @@ public class MainActivity extends Activity {
 
 		if (requestCode == CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE) {
 			if (resultCode == RESULT_OK) {
+				Intent a = new Intent(getApplicationContext(),VideoPlaybackActivity.class);
+				a.putExtra("videoUri", data.getData());
+				a.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+				setResult(RESULT_OK, a);
+				startActivityForResult(a,0);
+
 				// Video captured and saved to fileUri specified in the Intent
 				//	            Toast.makeText(this, "Video saved to:\n" + data.getData(), Toast.LENGTH_LONG).show();
 			} else if (resultCode == RESULT_CANCELED) {

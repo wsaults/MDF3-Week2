@@ -1,11 +1,11 @@
 /*
- * project 	Weather
+ * project 	ThingTag
  * 
- * package 	com.fullsail.weather
+ * package 	com.fullsail.thingtag
  * 
  * @author 	William Saults
  * 
- * date 	Aug 8, 2013
+ * date 	Aug 14, 2013
  */
 package com.fullsail.thingtag;
 
