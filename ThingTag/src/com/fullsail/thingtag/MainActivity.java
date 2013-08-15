@@ -13,17 +13,21 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.fullsail.weather.Connectivity;
+
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -31,11 +35,16 @@ public class MainActivity extends Activity {
 	private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
 
 	private Uri fileUri;
+	Context context = this;
+	public static Boolean connected = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
+		// Test Network Connetion
+		connected = Connectivity.getConnectionStatus(context);
 
 		// Launch camera
 		Button cameraButton = (Button) findViewById(R.id.tagItButton);
@@ -43,13 +52,13 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				// create Intent to take a picture and return control to the calling application
-			    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+				Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-			    fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE); // create a file to save the image
-			    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
+				fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE); // create a file to save the image
+				intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
 
-			    // start the image capture Intent
-			    startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+				// start the image capture Intent
+				startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
 			}
 		});
 
@@ -59,22 +68,32 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				//create new Intent
-			    Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-			    fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);  // create a file to save the video
-			    intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);  // set the image file name
+				Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+				fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);  // create a file to save the video
+				intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);  // set the image file name
 
-			    intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1); // set the video image quality to high
+				intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1); // set the video image quality to high
 
-			    // start the Video Capture Intent
-			    startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
+				// start the Video Capture Intent
+				startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
 
 			}
 		});
 
-		// TODO: store picture/video with GPS.
-		// TODO: check for network connectivity
+		// View tags
+		Button viewButton = (Button) findViewById(R.id.viewTagsButton);
+		viewButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent galleryIntent = new Intent(
+						Intent.ACTION_PICK,
+						android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+				startActivityForResult(galleryIntent , 0);
+
+			}
+		});
+
 		// TODO: Notify yourself if you tag something within a certain distance from another tag.
-		// TODO: view tags, show pictures, play back videos.
 
 	}
 
@@ -85,35 +104,43 @@ public class MainActivity extends Activity {
 		return true;
 	}
 	
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	    if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
-	        if (resultCode == RESULT_OK) {
-	            // Image captured and saved to fileUri specified in the Intent
-	            Toast.makeText(this, "Image saved to:\n" +
-	                     data.getData(), Toast.LENGTH_LONG).show();
-	        } else if (resultCode == RESULT_CANCELED) {
-	            // User cancelled the image capture
-	        } else {
-	            // Image capture failed, advise user
-	        }
-	    }
-
-	    if (requestCode == CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE) {
-	        if (resultCode == RESULT_OK) {
-	            // Video captured and saved to fileUri specified in the Intent
-	            Toast.makeText(this, "Video saved to:\n" +
-	                     data.getData(), Toast.LENGTH_LONG).show();
-	        } else if (resultCode == RESULT_CANCELED) {
-	            // User cancelled the video capture
-	        } else {
-	            // Video capture failed, advise user
-	        }
-	    }
+	public void noConnectionAlert() {
+		// Alert the user that there is no internet connection			
+		new AlertDialog.Builder(context)
+		.setTitle("Warning")
+		.setMessage("Cound not connect to the internet")
+		.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {}
+		})
+		.show();
 	}
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, fileUri));
+		if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
+			if (resultCode == RESULT_OK) {
+				// Image captured and saved to fileUri specified in the Intent
+				//	            Toast.makeText(this, "Image saved to:\n" + data.getData(), Toast.LENGTH_LONG).show();
+			} else if (resultCode == RESULT_CANCELED) {
+				// User cancelled the image capture
+			} else {
+				// Image capture failed, advise user
+			}
+		}
 
-	// TODO: Create class for this !!!!!!
+		if (requestCode == CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE) {
+			if (resultCode == RESULT_OK) {
+				// Video captured and saved to fileUri specified in the Intent
+				//	            Toast.makeText(this, "Video saved to:\n" + data.getData(), Toast.LENGTH_LONG).show();
+			} else if (resultCode == RESULT_CANCELED) {
+				// User cancelled the video capture
+			} else {
+				// Video capture failed, advise user
+			}
+		}
+	}
+
 	public static final int MEDIA_TYPE_IMAGE = 1;
 	public static final int MEDIA_TYPE_VIDEO = 2;
 
@@ -144,11 +171,9 @@ public class MainActivity extends Activity {
 		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 		File mediaFile;
 		if (type == MEDIA_TYPE_IMAGE){
-			mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-					"IMG_"+ timeStamp + ".jpg");
+			mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_"+ timeStamp + ".jpg");
 		} else if(type == MEDIA_TYPE_VIDEO) {
-			mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-					"VID_"+ timeStamp + ".mp4");
+			mediaFile = new File(mediaStorageDir.getPath() + File.separator + "VID_"+ timeStamp + ".mp4");
 		} else {
 			return null;
 		}
