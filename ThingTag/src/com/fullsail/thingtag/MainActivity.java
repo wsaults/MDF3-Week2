@@ -5,14 +5,13 @@
  * 
  * @author 	William Saults
  * 
- * date 	Aug 12, 2013
+ * date 	Aug 15, 2013
  */
 package com.fullsail.thingtag;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 import android.location.Criteria;
 import android.location.Location;
@@ -29,12 +28,17 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.TextView;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class MainActivity.
+ */
 public class MainActivity extends Activity implements LocationListener {
 
 	private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
@@ -42,25 +46,34 @@ public class MainActivity extends Activity implements LocationListener {
 
 	private final int VIB_NOTE_ID = 2;
 	private final int SND_NOTE_ID = 4;
-	private final int TXT_NOTE_ID = 5;
+	//	private final int TXT_NOTE_ID = 5;
 
 	private Uri fileUri;
 	Context context = this;
 	public static Boolean connected = false;
-	
-	LocationManager ls;
+	TextView lat;
+	TextView lon;
 
+	LocationManager lm;
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreate(android.os.Bundle)
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT); 
+
+		lat = (TextView) findViewById(R.id.lat);
+		lon = (TextView) findViewById(R.id.lon);
 
 		// Test Network Connetion
 		connected = Connectivity.getConnectionStatus(context);
-		
-		ls = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-		
-		if (ls == null) {
+
+		lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+		if (lm == null) {
 			new AlertDialog.Builder(context)
 			.setTitle("Error")
 			.setMessage("Location Manager is unavaliable")
@@ -69,9 +82,18 @@ public class MainActivity extends Activity implements LocationListener {
 			})
 			.show();
 		} else {
-			Criteria c = new Criteria();
-			c.setAccuracy(Criteria.ACCURACY_COARSE);
-			ls.requestLocationUpdates(3*1000 /*msec*/, 0 /*meters*/, c, null);
+
+			if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+				lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3*1000 /*msec*/, 0 /*meters*/, this);
+			} else if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+				lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 3*1000 /*msec*/, 0 /*meters*/, this);
+			} else {
+				try {
+					throw (new Exception("No location provider is available!"));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
 
 		// Launch camera
@@ -106,7 +128,7 @@ public class MainActivity extends Activity implements LocationListener {
 				//create new Intent
 				Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
 				fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);  // create a file to save the video
-//				intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);  // set the image file name
+				//				intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);  // set the image file name
 
 				intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1); // set the video image quality to high
 
@@ -130,6 +152,9 @@ public class MainActivity extends Activity implements LocationListener {
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -137,6 +162,9 @@ public class MainActivity extends Activity implements LocationListener {
 		return true;
 	}
 
+	/**
+	 * No connection alert.
+	 */
 	public void noConnectionAlert() {
 		// Alert the user that there is no internet connection			
 		new AlertDialog.Builder(context)
@@ -148,6 +176,9 @@ public class MainActivity extends Activity implements LocationListener {
 		.show();
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
+	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, fileUri));
@@ -204,12 +235,22 @@ public class MainActivity extends Activity implements LocationListener {
 	public static final int MEDIA_TYPE_IMAGE = 1;
 	public static final int MEDIA_TYPE_VIDEO = 2;
 
-	/** Create a file Uri for saving an image or video */
+	/**
+	 * Create a file Uri for saving an image or video.
+	 *
+	 * @param type the type
+	 * @return the output media file uri
+	 */
 	private static Uri getOutputMediaFileUri(int type){
 		return Uri.fromFile(getOutputMediaFile(type));
 	}
 
-	/** Create a File for saving an image or video */
+	/**
+	 * Create a File for saving an image or video.
+	 *
+	 * @param type the type
+	 * @return the output media file
+	 */
 	private static File getOutputMediaFile(int type){
 		// To be safe, you should check that the SDCard is mounted
 		// using Environment.getExternalStorageState() before doing this.
@@ -241,28 +282,41 @@ public class MainActivity extends Activity implements LocationListener {
 		return mediaFile;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.location.LocationListener#onLocationChanged(android.location.Location)
+	 */
 	@Override
 	public void onLocationChanged(Location arg0) {
 		// TODO Auto-generated method stub
-		
+		lat.setText(String.valueOf(arg0.getLatitude()));
+		lon.setText(String.valueOf(arg0.getLongitude()));
 	}
 
+	/* (non-Javadoc)
+	 * @see android.location.LocationListener#onProviderDisabled(java.lang.String)
+	 */
 	@Override
 	public void onProviderDisabled(String arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	/* (non-Javadoc)
+	 * @see android.location.LocationListener#onProviderEnabled(java.lang.String)
+	 */
 	@Override
 	public void onProviderEnabled(String arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	/* (non-Javadoc)
+	 * @see android.location.LocationListener#onStatusChanged(java.lang.String, int, android.os.Bundle)
+	 */
 	@Override
 	public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

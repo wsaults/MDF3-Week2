@@ -1,3 +1,12 @@
+/*
+ * project 	ThingTag
+ * 
+ * package 	com.fullsail.thingtag
+ * 
+ * @author 	William Saults
+ * 
+ * date 	Aug 15, 2013
+ */
 package com.fullsail.thingtag;
 
 import android.net.Uri;
@@ -7,10 +16,17 @@ import android.view.Menu;
 import android.widget.MediaController;
 import android.widget.VideoView;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class VideoPlaybackActivity.
+ */
 public class VideoPlaybackActivity extends Activity {
 	
 	VideoView vw;
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreate(android.os.Bundle)
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -27,6 +43,9 @@ public class VideoPlaybackActivity extends Activity {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.

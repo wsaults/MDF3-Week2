@@ -24,12 +24,16 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_settings=0x7f080007;
+        public static final int action_settings=0x7f08000b;
+        public static final int lat=0x7f080007;
+        public static final int latLabel=0x7f080006;
+        public static final int lon=0x7f080009;
+        public static final int lonLabel=0x7f080008;
         public static final int tagItButton=0x7f080001;
         public static final int tagItVideoButton=0x7f080003;
         public static final int tagLabel=0x7f080000;
         public static final int tagVideoLabel=0x7f080002;
-        public static final int videoView1=0x7f080006;
+        public static final int videoView1=0x7f08000a;
         public static final int viewTagsButton=0x7f080005;
         public static final int viewTagsLabel=0x7f080004;
     }
