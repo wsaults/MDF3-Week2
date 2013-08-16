@@ -10,12 +10,14 @@
 package com.fullsail.thingtag;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
-import android.media.AudioManager;
-import android.media.MediaPlayer;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -24,20 +26,16 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.MediaController;
-import android.widget.VideoView;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements LocationListener {
 
 	private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
 	private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
@@ -49,6 +47,8 @@ public class MainActivity extends Activity {
 	private Uri fileUri;
 	Context context = this;
 	public static Boolean connected = false;
+	
+	LocationManager ls;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +57,22 @@ public class MainActivity extends Activity {
 
 		// Test Network Connetion
 		connected = Connectivity.getConnectionStatus(context);
+		
+		ls = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+		
+		if (ls == null) {
+			new AlertDialog.Builder(context)
+			.setTitle("Error")
+			.setMessage("Location Manager is unavaliable")
+			.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {}
+			})
+			.show();
+		} else {
+			Criteria c = new Criteria();
+			c.setAccuracy(Criteria.ACCURACY_COARSE);
+			ls.requestLocationUpdates(3*1000 /*msec*/, 0 /*meters*/, c, null);
+		}
 
 		// Launch camera
 		Button cameraButton = (Button) findViewById(R.id.tagItButton);
@@ -223,6 +239,30 @@ public class MainActivity extends Activity {
 		}
 
 		return mediaFile;
+	}
+
+	@Override
+	public void onLocationChanged(Location arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onProviderDisabled(String arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onProviderEnabled(String arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
