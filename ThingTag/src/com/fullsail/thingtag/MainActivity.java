@@ -13,7 +13,6 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -287,7 +286,10 @@ public class MainActivity extends Activity implements LocationListener {
 	 */
 	@Override
 	public void onLocationChanged(Location arg0) {
-		// TODO Auto-generated method stub
+		if (!connected)  {
+			noConnectionAlert();
+			return;
+		}
 		lat.setText(String.valueOf(arg0.getLatitude()));
 		lon.setText(String.valueOf(arg0.getLongitude()));
 	}
@@ -298,7 +300,6 @@ public class MainActivity extends Activity implements LocationListener {
 	@Override
 	public void onProviderDisabled(String arg0) {
 		// TODO Auto-generated method stub
-
 	}
 
 	/* (non-Javadoc)
@@ -307,7 +308,6 @@ public class MainActivity extends Activity implements LocationListener {
 	@Override
 	public void onProviderEnabled(String arg0) {
 		// TODO Auto-generated method stub
-
 	}
 
 	/* (non-Javadoc)
@@ -316,7 +316,6 @@ public class MainActivity extends Activity implements LocationListener {
 	@Override
 	public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
 		// TODO Auto-generated method stub
-
 	}
 
 }
